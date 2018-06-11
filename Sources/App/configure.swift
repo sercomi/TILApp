@@ -19,7 +19,24 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
 
     /// Register the configured SQLite database to the database config.
     var databases = DatabasesConfig()
-    let databaseConfig = MySQLDatabaseConfig(hostname: "localhost", port: 3306, username: "vapor", password: "password", database: "vapor")
+    let hostname = Environment.get("DATABASE_HOSTNAME") ?? "localhost"
+    let username = Environment.get("DATABASE_USER") ?? "vapor"
+    let databaseName: String
+    let databasePort: Int
+    if (env == .testing) {
+        databaseName = "vapor-test"
+        if let testPort = Environment.get("DATABASE_PORT") {
+            databasePort = Int(testPort) ?? 3307
+        } else {
+            databasePort = 3307
+        }
+    } else {
+        databaseName = Environment.get("DATABASE_DB") ?? "vapor"
+        databasePort = 3306
+    }
+    let password = Environment.get("DATABASE_PASSWORD") ?? "password"
+    
+    let databaseConfig = MySQLDatabaseConfig(hostname: hostname, port: databasePort, username: username, password: password, database: databaseName)
     let database = MySQLDatabase(config: databaseConfig)
     databases.add(database: database, as: .mysql)
     services.register(databases)
@@ -31,5 +48,10 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     migrations.add(model: Acronym.self, database: .mysql)
     migrations.add(model: AcronymCategoryPivot.self, database: .mysql)
     services.register(migrations)
+    
+    // Configure the rest of your application here
+    var commandConfig = CommandConfig.default()
+    commandConfig.use(RevertCommand.self, as: "revert")
+    services.register(commandConfig)
 
 }

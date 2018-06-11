@@ -1,0 +1,25 @@
+# 1
+version: '3'
+# 2
+services:
+  # 3
+  til-app:
+    # 4
+    depends_on:
+      - mysql
+    # 5
+    build: .
+    # 6
+    environment:
+      - DATABASE_HOSTNAME=mysql
+      - DATABASE_PORT=3306
+  # 7
+  mysql:
+    # 8
+    image: "mysql/mysql-server:5.7"
+    # 9
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=vapor-test
+      - MYSQL_USER=vapor
+      - MYSQL_PASSWORD=password
