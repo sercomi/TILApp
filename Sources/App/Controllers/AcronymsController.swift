@@ -78,10 +78,10 @@ struct AcronymsController: RouteCollection {
             .all()
     }
     
-    func getUserHandler(_ req: Request) throws -> Future<User> {
+    func getUserHandler(_ req: Request) throws -> Future<User.Public> {
         return try req.parameters.next(Acronym.self)
-            .flatMap(to: User.self) { acronym in
-                try acronym.user.get(on: req)
+            .flatMap(to: User.Public.self) { acronym in
+                try acronym.user.get(on: req).convertToPublic()
         }
     }
 
